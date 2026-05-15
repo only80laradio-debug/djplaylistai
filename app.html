@@ -577,7 +577,7 @@ async function generate() {
   document.getElementById('pl-content').innerHTML='<div class="loading"><div class="spinner"></div><p>L\'IA compose ta playlist...</p></div>';
 
   try {
-    const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:`Tu es un DJ expert spécialisé dans les mariages et événements privés. Génère une playlist pour :
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:`Tu es un DJ expert spécialisé dans les mariages et événements privés. Génère une playlist pour :
 - Événement : ${evt}
 - Ambiance : ${moods}
 - Genre : ${genre}
@@ -586,7 +586,7 @@ async function generate() {
 ${inst?'- Instructions : '+inst:''}
 Réponds UNIQUEMENT avec un JSON valide sans markdown :
 {"playlist_name":"Nom poétique","description":"Description courte","avg_bpm":${bpm},"total_duration":"Xh00","tracks":[{"title":"Titre","artist":"Artiste","bpm":110,"duration":"3:45","energy":"low|medium|high"}]}
-Génère 12 à 16 titres réels connus. BPM progressifs. Varie les artistes.`})});
+Génère 12 à 16 titres réels connus. BPM progressifs. Varie les artistes.`}]})});
     const data=await res.json();
     const text=data.content.map(i=>i.text||'').join('');
     const pl=JSON.parse(text.replace(/```json|```/g,'').trim());
