@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DJ Playlist AI — App</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root {
+  --bg: #0a0a0a;
+  --bg2: #111111;
+  --bg3: #181818;
+  --border: rgba(255,255,255,0.08);
+  --text: #F0EDE8;
+  --text2: #9A9690;
+  --text3: #555;
+  --gold: #C9A84C;
+  --gold-bg: rgba(201,168,76,0.1);
+  --green: #1DB954;
+  --red: #ef4444;
+  --orange: #f59e0b;
+  --radius: 10px;
+  --radius-lg: 16px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+/* TOPBAR */
+.topbar{background:var(--bg2);border-bottom:0.5px solid var(--border);padding:.65rem 1.25rem;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.topbar-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:7px;}
+.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.topbar-title{font-size:13px;font-weight:500;color:var(--text);flex:1;padding-left:12px;border-left:0.5px solid var(--border);}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap;}
+.btn:hover{background:var(--bg3);}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+.btn-gold{background:var(--gold);color:#000;border-color:var(--gold);font-weight:600;}
+.btn-gold:hover{opacity:.88;background:var(--gold);}
+.btn-green{background:#1a3d27;color:var(--green);border-color:#1DB95440;}
+.btn-green:hover{background:#1f4a2f;}
+.btn-save{background:#1a2a1a;color:#4ade80;border-color:#4ade8040;}
+.btn-upgrade{background:linear-gradient(135deg,var(--orange),var(--red));color:#fff;border:none;font-weight:600;}
+/* LAYOUT */
+.workspace{flex:1;display:flex;overflow:hidden;}
+/* SIDEBAR */
+.sidebar{width:200px;min-width:200px;background:var(--bg2);border-right:0.5px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.nav-section{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);padding:.6rem 1rem .2rem;}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 1rem;font-size:12px;color:var(--text2);cursor:pointer;transition:background .1s;}
+.nav-item:hover{background:var(--bg3);}
+.nav-item.active{color:var(--text);background:var(--bg3);font-weight:500;}
+.nav-item i{font-size:15px;}
+.nav-badge{margin-left:auto;font-size:10px;background:var(--gold-bg);color:var(--gold);padding:1px 6px;border-radius:20px;}
+.saved-scroll{flex:1;overflow-y:auto;}
+.saved-item{padding:7px 1rem;cursor:pointer;border-bottom:0.5px solid var(--border);transition:background .1s;}
+.saved-item:hover{background:var(--bg3);}
+.saved-name{font-size:11px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.saved-meta{font-size:10px;color:var(--text3);margin-top:1px;}
+.saved-del{float:right;color:var(--text3);cursor:pointer;opacity:0;transition:opacity .1s;font-size:13px;}
+.saved-item:hover .saved-del{opacity:1;}
+.sidebar-foot{border-top:0.5px solid var(--border);padding:.75rem 1rem;}
+.quota-row{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:4px;}
+.quota-bar{height:3px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:8px;}
+.quota-fill{height:3px;border-radius:3px;transition:width .4s,background .4s;}
+.plan-chip{font-size:10px;padding:3px 8px;border-radius:20px;display:inline-block;cursor:pointer;margin-bottom:6px;}
+.chip-free{background:var(--bg3);color:var(--text2);}
+.chip-pro{background:var(--gold-bg);color:var(--gold);}
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.main-content{flex:1;overflow-y:auto;padding:1rem;display:grid;grid-template-columns:300px 1fr;gap:1rem;align-content:start;}
+/* PANEL */
+.panel{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem;}
+.panel-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:.75rem;display:flex;align-items:center;gap:6px;font-family:'Syne',sans-serif;}
+label{font-size:11px;color:var(--text2);display:block;margin-bottom:3px;margin-top:8px;}
+label:first-of-type{margin-top:0;}
+select,input[type=text],textarea{width:100%;font-size:12px;font-family:'DM Sans',sans-serif;background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:6px 9px;color:var(--text);outline:none;transition:border-color .15s;}
+select:focus,input:focus,textarea:focus{border-color:rgba(201,168,76,.4);}
+.bpm-row{display:flex;align-items:center;gap:8px;}
+input[type=range]{flex:1;accent-color:var(--gold);}
+.bpm-val{font-size:12px;font-weight:600;color:var(--text);min-width:52px;text-align:right;}
+.mood-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:3px;}
+.mood-chip{padding:5px 8px;font-size:11px;border-radius:var(--radius);border:0.5px solid var(--border);color:var(--text2);cursor:pointer;text-align:center;transition:all .12s;background:transparent;font-family:'DM Sans',sans-serif;}
+.mood-chip.on{background:var(--gold-bg);color:var(--gold);border-color:rgba(201,168,76,.3);font-weight:500;}
+.gen-btn{width:100%;margin-top:12px;justify-content:center;padding:9px;font-size:13px;font-family:'Syne',sans-serif;font-weight:700;}
+/* SPOTIFY BOX */
+.spotify-box{background:var(--bg3);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;margin-top:10px;}
+.spotify-box label{margin-top:0;}
+.sp-row{display:flex;gap:6px;margin-top:4px;}
+.sp-row input{flex:1;font-size:11px;}
+.sp-btn{padding:5px 9px;font-size:11px;flex-shrink:0;}
+.sp-status{font-size:11px;color:var(--text3);margin-top:6px;}
+.sp-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#ccc;margin-right:5px;}
+.sp-dot.on{background:var(--green);}
+/* PLAYLIST PANEL */
+.pl-panel{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem;min-height:420px;position:relative;display:flex;flex-direction:column;}
+.pl-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:6px;}
+.compat-row{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap;}
+.compat-tag{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;}
+.rb{background:#dbeafe;color:#1e3a8a;}
+.sr{background:#fee2e2;color:#7f1d1d;}
+.sp{background:#dcfce7;color:#14532d;}
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:.75rem;}
+.stat{background:var(--bg3);border-radius:var(--radius);padding:6px 8px;}
+.stat-v{font-size:16px;font-weight:700;color:var(--text);}
+.stat-l{font-size:10px;color:var(--text3);}
+/* TRACKS */
+.track-list{display:flex;flex-direction:column;gap:1px;overflow-y:auto;}
+.track{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--radius);transition:background .1s;}
+.track:hover{background:var(--bg3);}
+.t-num{font-size:11px;color:var(--text3);min-width:16px;text-align:center;}
+.t-info{flex:1;min-width:0;}
+.t-title{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.t-artist{font-size:11px;color:var(--text2);}
+.t-meta{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text3);flex-shrink:0;}
+.bpm-tag{background:var(--bg3);border-radius:6px;padding:1px 5px;}
+/* EMPTY */
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text3);text-align:center;padding:2rem;}
+.empty i{font-size:32px;margin-bottom:10px;}
+.empty p{font-size:12px;line-height:1.6;}
+/* LOADING */
+.loading{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
+.spinner{width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading p{font-size:12px;color:var(--text2);}
+/* EXPORT MENU */
+.export-wrap{position:relative;}
+.export-menu{position:absolute;top:calc(100% + 4px);right:0;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);min-width:210px;z-index:50;overflow:hidden;}
+.em-label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);padding:7px 14px 3px;}
+.em-item{display:flex;align-items:center;gap:9px;padding:8px 14px;font-size:12px;color:var(--text);cursor:pointer;transition:background .1s;}
+.em-item:hover{background:var(--bg3);}
+.em-item i{font-size:14px;color:var(--text2);}
+.em-sep{height:0.5px;background:var(--border);}
+/* QUOTA WALL */
+.quota-wall{position:absolute;inset:0;background:rgba(10,10,10,.95);backdrop-filter:blur(6px);z-index:10;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-lg);}
+.qw-inner{text-align:center;padding:2rem;max-width:300px;}
+.qw-icon{font-size:36px;margin-bottom:12px;display:block;}
+.qw-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;}
+.qw-desc{font-size:12px;color:var(--text2);margin-bottom:1.5rem;line-height:1.6;}
+.qw-plans{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.qw-plan{border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;text-align:center;cursor:pointer;transition:all .15s;}
+.qw-plan:hover,.qw-plan.featured{border-color:var(--orange);background:rgba(245,158,11,.06);}
+.qw-plan-name{font-size:11px;font-weight:600;margin-bottom:3px;}
+.qw-plan-price{font-size:17px;font-weight:700;}
+.qw-plan-price span{font-size:10px;color:var(--text3);}
+.qw-plan-limit{font-size:10px;color:var(--text3);margin-top:2px;}
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-bg.hidden{display:none;}
+.modal{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem;max-width:400px;width:90%;position:relative;}
+.modal-x{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;}
+.modal-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:.4rem;}
+.modal-desc{font-size:12px;color:var(--text2);margin-bottom:1.25rem;line-height:1.6;}
+.modal-plans{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.25rem;}
+.mp{border:0.5px solid var(--border);border-radius:var(--radius);padding:.9rem;cursor:pointer;transition:all .15s;}
+.mp:hover,.mp.active{border-color:var(--orange);background:rgba(245,158,11,.06);}
+.mp-tag{font-size:9px;background:var(--orange);color:#000;padding:1px 6px;border-radius:20px;font-weight:700;display:inline-block;margin-bottom:5px;}
+.mp-name{font-size:12px;font-weight:600;margin-bottom:3px;}
+.mp-price{font-size:20px;font-weight:700;}
+.mp-price span{font-size:10px;color:var(--text3);}
+.mp-features{list-style:none;font-size:11px;color:var(--text2);margin-top:7px;display:flex;flex-direction:column;gap:4px;}
+.mp-features li::before{content:'✓ ';}
+.confirm-btn{width:100%;padding:10px;border-radius:var(--radius);background:linear-gradient(135deg,var(--orange),var(--red));color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;transition:opacity .2s;}
+.confirm-btn:hover{opacity:.88;}
+.modal-note{font-size:10px;color:var(--text3);text-align:center;margin-top:8px;}
+/* SAVED VIEW */
+.saved-view{padding:1rem;overflow-y:auto;flex:1;}
+.saved-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.75rem;}
+.saved-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem;cursor:pointer;transition:border-color .15s;}
+.saved-card:hover{border-color:rgba(201,168,76,.3);}
+.sc-head{display:flex;justify-content:space-between;align-items:start;margin-bottom:6px;}
+.sc-name{font-size:13px;font-weight:600;font-family:'Syne',sans-serif;}
+.sc-date{font-size:10px;color:var(--text3);margin-top:2px;}
+.sc-desc{font-size:11px;color:var(--text2);margin-bottom:10px;line-height:1.5;}
+.sc-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.sc-tag{font-size:10px;background:var(--bg3);padding:2px 7px;border-radius:20px;color:var(--text2);}
+/* TOAST */
+.toast{position:fixed;bottom:16px;right:16px;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:8px 14px;font-size:12px;color:var(--text);display:flex;align-items:center;gap:7px;z-index:300;transition:opacity .3s;}
+.toast.hidden{opacity:0;pointer-events:none;}
+/* PROGRESS */
+.prog-wrap{height:3px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:6px;}
+.prog-fill{height:3px;background:var(--green);border-radius:3px;transition:width .3s;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="index.html" class="topbar-logo"><div class="logo-dot"></div>DJ Playlist AI</a>
+  <span class="topbar-title" id="topbar-title">Nouveau générateur</span>
+  <div class="export-wrap" id="export-wrap">
+    <button class="btn" id="btn-export" onclick="toggleExportMenu(event)" style="display:none;"><i class="ti ti-download"></i> Exporter <i class="ti ti-chevron-down" style="font-size:11px;"></i></button>
+    <div class="export-menu" id="export-menu" style="display:none;">
+      <div class="em-label">Logiciels DJ</div>
+      <div class="em-item" onclick="doExport('rekordbox')"><i class="ti ti-file-music"></i><div><div style="font-weight:500;">Rekordbox (.m3u8)</div><div style="font-size:10px;color:var(--text3);">File → Import Playlist</div></div></div>
+      <div class="em-item" onclick="doExport('serato')"><i class="ti ti-file-music"></i><div><div style="font-weight:500;">Serato DJ (.m3u)</div><div style="font-size:10px;color:var(--text3);">Files → Import Playlist</div></div></div>
+      <div class="em-sep"></div>
+      <div class="em-label">Autres</div>
+      <div class="em-item" onclick="doExport('txt')"><i class="ti ti-file-text"></i><div style="font-weight:500;">Setlist texte (.txt)</div></div>
+      <div class="em-item" onclick="doExport('csv')"><i class="ti ti-table"></i><div style="font-weight:500;">Tableau CSV (.csv)</div></div>
+    </div>
+  </div>
+  <button class="btn btn-save" id="btn-save" onclick="savePlaylist()" style="display:none;"><i class="ti ti-bookmark"></i> Sauvegarder</button>
+  <button class="btn btn-green" id="btn-spotify" onclick="sendToSpotify()" style="display:none;"><i class="ti ti-brand-spotify"></i> Envoyer Spotify</button>
+  <button class="btn btn-upgrade" id="btn-upgrade" onclick="openModal()" style="display:none;"><i class="ti ti-crown"></i> Passer Pro</button>
+</div>
+
+<div class="workspace">
+  <div class="sidebar">
+    <div class="nav-section">Navigation</div>
+    <div class="nav-item active" id="nav-gen" onclick="showGen(this)"><i class="ti ti-sparkles"></i> Générer</div>
+    <div class="nav-item" id="nav-saved" onclick="showSaved(this)"><i class="ti ti-bookmark"></i> Mes playlists <span class="nav-badge" id="saved-badge"></span></div>
+    <div class="nav-section">Sauvegardées</div>
+    <div class="saved-scroll" id="sidebar-list"><div style="padding:.75rem 1rem;font-size:11px;color:var(--text3);">Aucune playlist encore</div></div>
+    <div class="sidebar-foot">
+      <div class="quota-row"><span>Générations ce mois</span><span id="quota-text">0 / 5</span></div>
+      <div class="quota-bar"><div class="quota-fill" id="quota-fill" style="width:0%;background:var(--green);"></div></div>
+      <div class="plan-chip chip-free" id="plan-chip" onclick="openModal()">⭐ Passer Pro DJ</div>
+      <div style="font-size:11px;color:var(--text2);">Thomas Moreau</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- GENERATE VIEW -->
+    <div class="main-content" id="view-gen">
+      <div>
+        <div class="panel">
+          <div class="panel-title"><i class="ti ti-adjustments-horizontal"></i> Paramètres</div>
+          <label>Type d'événement</label>
+          <select id="evt">
+            <option>Mariage — cocktail</option>
+            <option>Mariage — dîner</option>
+            <option>Mariage — soirée dansante</option>
+            <option>Anniversaire — ambiance lounge</option>
+            <option>Anniversaire — fête</option>
+            <option>Soirée privée</option>
+          </select>
+          <label>Ambiance / mood</label>
+          <div class="mood-grid">
+            <button class="mood-chip on" onclick="this.classList.toggle('on')">Romantique</button>
+            <button class="mood-chip" onclick="this.classList.toggle('on')">Festif</button>
+            <button class="mood-chip" onclick="this.classList.toggle('on')">Élégant</button>
+            <button class="mood-chip" onclick="this.classList.toggle('on')">Nostalgique</button>
+            <button class="mood-chip" onclick="this.classList.toggle('on')">Lounge</button>
+            <button class="mood-chip" onclick="this.classList.toggle('on')">Énergie max</button>
+          </div>
+          <label>Genre musical</label>
+          <select id="genre">
+            <option>Mix varié (recommandé)</option>
+            <option>Pop française & internationale</option>
+            <option>R&B / Soul</option>
+            <option>Electro / House</option>
+            <option>Jazz / Bossa Nova</option>
+            <option>Années 80-90</option>
+          </select>
+          <label>BPM cible</label>
+          <div class="bpm-row">
+            <input type="range" min="60" max="180" value="110" id="bpm" oninput="document.getElementById('bpm-out').textContent=this.value+' BPM'">
+            <span class="bpm-val" id="bpm-out">110 BPM</span>
+          </div>
+          <label>Durée</label>
+          <select id="dur">
+            <option>1 heure (~15 titres)</option>
+            <option>2 heures (~30 titres)</option>
+            <option>3 heures (~45 titres)</option>
+          </select>
+          <label>Instructions spéciales</label>
+          <textarea id="inst" rows="2" placeholder="Ex: commencer doucement, éviter le hip-hop..."></textarea>
+
+          <div class="spotify-box">
+            <label>Connexion Spotify</label>
+            <div class="sp-row">
+              <input type="text" id="sp-cid" placeholder="Client ID Spotify...">
+              <button class="btn sp-btn" onclick="connectSpotify()"><i class="ti ti-brand-spotify"></i> Connecter</button>
+            </div>
+            <div class="sp-status" id="sp-status"><span class="sp-dot"></span>Non connecté · <a href="https://developer.spotify.com/dashboard" target="_blank" style="color:var(--gold);">Créer une app</a></div>
+          </div>
+
+          <button class="btn btn-gold gen-btn" id="gen-btn" onclick="generate()">
+            <i class="ti ti-sparkles"></i> Générer avec l'IA ↗
+          </button>
+        </div>
+      </div>
+
+      <div style="position:relative;display:flex;flex-direction:column;">
+        <div class="pl-panel" id="pl-panel">
+          <div class="pl-header">
+            <span class="panel-title" style="margin-bottom:0;"><i class="ti ti-playlist"></i> Playlist générée</span>
+            <button class="btn" id="regen-btn" style="display:none;padding:4px 9px;" onclick="generate()"><i class="ti ti-refresh"></i> Regénérer</button>
+          </div>
+          <div class="compat-row" id="compat-row" style="display:none;">
+            <span class="compat-tag rb"><i class="ti ti-check" style="font-size:10px;"></i> Rekordbox</span>
+            <span class="compat-tag sr"><i class="ti ti-check" style="font-size:10px;"></i> Serato</span>
+            <span class="compat-tag sp"><i class="ti ti-check" style="font-size:10px;"></i> Spotify</span>
+          </div>
+          <div id="sp-send-status" style="display:none;margin-bottom:8px;"></div>
+          <div id="pl-content" style="flex:1;display:flex;flex-direction:column;">
+            <div class="empty">
+              <i class="ti ti-music-off"></i>
+              <p>Configure les paramètres<br>et clique sur <strong>Générer avec l'IA</strong></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUOTA WALL -->
+        <div class="quota-wall" id="quota-wall" style="display:none;">
+          <div class="qw-inner">
+            <span class="qw-icon">🔒</span>
+            <div class="qw-title">Limite mensuelle atteinte</div>
+            <div class="qw-desc">Tu as utilisé tes <strong>5 générations gratuites</strong> ce mois. Passe en Pro DJ pour continuer.</div>
+            <div class="qw-plans">
+              <div class="qw-plan"><div class="qw-plan-name">Starter</div><div class="qw-plan-price">0€ <span>/mois</span></div><div class="qw-plan-limit">5 playlists/mois</div></div>
+              <div class="qw-plan featured" onclick="openModal()"><div class="qw-plan-name">Pro DJ</div><div class="qw-plan-price">19€ <span>/mois</span></div><div class="qw-plan-limit">50 playlists/mois</div></div>
+            </div>
+            <div style="font-size:10px;color:var(--text3);">Quota remis à zéro le 1er du mois</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SAVED VIEW -->
+    <div class="saved-view" id="view-saved" style="display:none;">
+      <div class="saved-grid" id="saved-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- UPGRADE MODAL -->
+<div class="modal-bg hidden" id="modal">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal()">✕</button>
+    <div class="modal-title">Choisir un plan</div>
+    <div class="modal-desc">Génère plus de playlists et accède à tous les exports pro.</div>
+    <div class="modal-plans">
+      <div class="mp" onclick="pickPlan('free',this)">
+        <div class="mp-name">Starter</div>
+        <div class="mp-price">0€ <span>/mois</span></div>
+        <ul class="mp-features"><li>5 playlists/mois</li><li>Export txt/csv</li></ul>
+      </div>
+      <div class="mp active" onclick="pickPlan('pro',this)">
+        <div class="mp-tag">⭐ POPULAIRE</div>
+        <div class="mp-name">Pro DJ</div>
+        <div class="mp-price">19€ <span>/mois</span></div>
+        <ul class="mp-features"><li>50 playlists/mois</li><li>Rekordbox + Serato</li><li>Spotify</li><li>Sauvegarde illimitée</li></ul>
+      </div>
+    </div>
+    <button class="confirm-btn" id="confirm-btn" onclick="confirmPlan()">Activer Pro DJ — 19€/mois →</button>
+    <div class="modal-note">Paiement sécurisé via Stripe · Annulable à tout moment</div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast hidden" id="toast">
+  <i class="ti ti-check" id="toast-icon" style="color:#4ade80;font-size:14px;"></i>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+const PLANS = { free:{limit:5,label:'Starter'}, pro:{limit:50,label:'Pro DJ'} };
+let plan = 'free', usage = 0, playlist = null, playlists = [], spToken = null, spUser = null, selPlan = 'pro';
+
+// STORAGE
+async function load() {
+  try { const r = await window.storage.get('djp_lists'); if(r?.value) playlists = JSON.parse(r.value); } catch(e){}
+  try { const r = await window.storage.get('djp_usage'); if(r?.value){const d=JSON.parse(r.value);const k=getMonthKey();usage=d.k===k?d.c:0;} } catch(e){}
+  try { const r = await window.storage.get('djp_plan'); if(r?.value) plan = r.value; } catch(e){}
+  try { const r = await window.storage.get('djp_spid'); if(r?.value) document.getElementById('sp-cid').value=r.value; } catch(e){}
+  checkSpCallback();
+  refreshQuota();
+  renderSidebar();
+}
+async function saveLists() { try { await window.storage.set('djp_lists', JSON.stringify(playlists)); } catch(e){} }
+async function saveUsage() { try { await window.storage.set('djp_usage', JSON.stringify({k:getMonthKey(),c:usage})); } catch(e){} }
+function getMonthKey() { const d=new Date(); return `${d.getFullYear()}-${d.getMonth()}`; }
+
+// SPOTIFY
+function checkSpCallback() {
+  const h = window.location.hash;
+  if (h?.includes('access_token')) {
+    const p = new URLSearchParams(h.substring(1));
+    spToken = p.get('access_token');
+    window.location.hash = '';
+    if (spToken) fetchSpUser();
+  }
+}
+async function fetchSpUser() {
+  try {
+    const r = await fetch('https://api.spotify.com/v1/me', {headers:{'Authorization':'Bearer '+spToken}});
+    if (r.ok) { spUser = await r.json(); updateSpUI(true); toast('Spotify connecté — '+(spUser.display_name||spUser.id), 'brand-spotify'); }
+    else { spToken=null; updateSpUI(false); }
+  } catch(e) { updateSpUI(false); }
+}
+function updateSpUI(ok) {
+  const s = document.getElementById('sp-status');
+  const dot = '<span class="sp-dot'+(ok?' on':'')+'"></span>';
+  s.innerHTML = ok ? `${dot}Connecté : <strong>${spUser?.display_name||spUser?.id}</strong>` : `${dot}Non connecté · <a href="https://developer.spotify.com/dashboard" target="_blank" style="color:var(--gold);">Créer une app</a>`;
+  if (playlist) document.getElementById('btn-spotify').style.display = ok ? 'inline-flex' : 'none';
+}
+async function connectSpotify() {
+  const cid = document.getElementById('sp-cid').value.trim();
+  if (!cid) { toast('Colle ton Client ID Spotify','alert-circle'); return; }
+  try { await window.storage.set('djp_spid', cid); } catch(e){}
+  const url = `https://accounts.spotify.com/authorize?client_id=${encodeURIComponent(cid)}&response_type=token&redirect_uri=${encodeURIComponent('https://claude.ai/')}&scope=${encodeURIComponent('playlist-modify-public playlist-modify-private user-read-private')}&show_dialog=true`;
+  document.getElementById('sp-status').innerHTML = `<span style="color:var(--orange);">Après autorisation, colle le token ici :</span><div class="sp-row" style="margin-top:5px;"><input type="text" id="tok-in" placeholder="access_token=..." style="font-size:11px;"><button class="btn sp-btn" onclick="setToken()">OK</button></div>`;
+  window.open(url, '_blank');
+}
+function setToken() {
+  const raw = document.getElementById('tok-in')?.value.trim();
+  const m = raw?.match(/access_token=([^&]+)/);
+  spToken = m ? m[1] : raw;
+  if (spToken) fetchSpUser();
+}
+async function sendToSpotify() {
+  if (!spToken||!playlist||!spUser) return;
+  const el = document.getElementById('sp-send-status');
+  el.style.display='block';
+  el.innerHTML=`<div style="font-size:11px;color:var(--text2);margin-bottom:5px;">Recherche des titres...</div><div class="prog-wrap"><div class="prog-fill" id="pfill" style="width:0%"></div></div>`;
+  const uris=[]; let found=0;
+  for (let i=0;i<playlist.tracks.length;i++) {
+    const t=playlist.tracks[i];
+    try {
+      const r=await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent('track:'+t.title+' artist:'+t.artist)}&type=track&limit=1`,{headers:{'Authorization':'Bearer '+spToken}});
+      if(r.ok){const d=await r.json();if(d.tracks?.items[0]){uris.push(d.tracks.items[0].uri);found++;}}
+    } catch(e){}
+    document.getElementById('pfill').style.width=Math.round(((i+1)/playlist.tracks.length)*60)+'%';
+  }
+  el.innerHTML=`<div style="font-size:11px;color:var(--text2);margin-bottom:5px;">Création de la playlist (${found} titres)...</div><div class="prog-wrap"><div class="prog-fill" style="width:75%"></div></div>`;
+  try {
+    const cr=await fetch(`https://api.spotify.com/v1/users/${spUser.id}/playlists`,{method:'POST',headers:{'Authorization':'Bearer '+spToken,'Content-Type':'application/json'},body:JSON.stringify({name:playlist.playlist_name,description:playlist.description,public:false})});
+    if (!cr.ok) throw new Error();
+    const pl=await cr.json();
+    if (uris.length) await fetch(`https://api.spotify.com/v1/playlists/${pl.id}/tracks`,{method:'POST',headers:{'Authorization':'Bearer '+spToken,'Content-Type':'application/json'},body:JSON.stringify({uris})});
+    el.innerHTML=`<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#0d2b1a;border-radius:var(--radius);"><i class="ti ti-brand-spotify" style="color:var(--green);font-size:15px;"></i><div><div style="font-size:11px;font-weight:500;color:var(--green);">${found} titres envoyés !</div><a href="${pl.external_urls.spotify}" target="_blank" style="font-size:10px;color:var(--green);">Ouvrir dans Spotify →</a></div></div>`;
+    toast(`Playlist créée sur Spotify (${found} titres)`,'brand-spotify');
+  } catch(e) {
+    el.innerHTML=`<div style="font-size:11px;color:var(--red);">Erreur Spotify — token expiré ? Reconnecte-toi.</div>`;
+  }
+}
+
+// QUOTA
+function refreshQuota() {
+  const lim = PLANS[plan].limit;
+  const pct = Math.min((usage/lim)*100,100);
+  document.getElementById('quota-text').textContent=`${usage} / ${lim}`;
+  document.getElementById('quota-fill').style.width=pct+'%';
+  document.getElementById('quota-fill').style.background=pct>=100?'var(--red)':pct>=80?'var(--orange)':'var(--green)';
+  const chip=document.getElementById('plan-chip');
+  chip.className='plan-chip '+(plan==='pro'?'chip-pro':'chip-free');
+  chip.textContent=plan==='pro'?'✦ Pro DJ':'⭐ Passer Pro DJ';
+  const wall=document.getElementById('quota-wall');
+  const btn=document.getElementById('gen-btn');
+  const upBtn=document.getElementById('btn-upgrade');
+  if (usage>=lim) { wall.style.display='flex'; btn.disabled=true; if(plan==='free') upBtn.style.display='inline-flex'; }
+  else { wall.style.display='none'; btn.disabled=false; upBtn.style.display='none'; }
+}
+
+// PLAN MODAL
+function openModal() { document.getElementById('modal').classList.remove('hidden'); }
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+function pickPlan(p, el) {
+  selPlan=p;
+  document.querySelectorAll('.mp').forEach(m=>m.classList.remove('active'));
+  el.classList.add('active');
+  const btn=document.getElementById('confirm-btn');
+  if(p==='free'){btn.textContent='Rester sur Starter';btn.style.background='var(--bg3)';btn.style.color='var(--text)';}
+  else{btn.textContent='Activer Pro DJ — 19€/mois →';btn.style.background='linear-gradient(135deg,var(--orange),var(--red))';btn.style.color='#fff';}
+}
+async function confirmPlan() {
+  plan=selPlan;
+  try{await window.storage.set('djp_plan',plan);}catch(e){}
+  closeModal(); refreshQuota();
+  toast('Plan '+PLANS[plan].label+' activé !','crown');
+}
+
+// EXPORT
+function toggleExportMenu(e){e.stopPropagation();const m=document.getElementById('export-menu');m.style.display=m.style.display==='none'?'block':'none';}
+document.addEventListener('click',()=>document.getElementById('export-menu').style.display='none');
+function doExport(fmt) {
+  document.getElementById('export-menu').style.display='none';
+  if (!playlist) return;
+  const n=playlist.playlist_name.replace(/[^a-z0-9]/gi,'_');
+  if (fmt==='rekordbox') {
+    const l=['#EXTM3U',`# Rekordbox: ${playlist.playlist_name}`];
+    playlist.tracks.forEach(t=>{l.push(`#EXTINF:${dur2s(t.duration)},${t.artist} - ${t.title}`);l.push(`C:\\Music\\${t.artist} - ${t.title}.mp3`);});
+    dl(l.join('\n'),n+'_rekordbox.m3u8','audio/x-mpegurl'); toast('Export Rekordbox téléchargé !','file-music');
+  } else if (fmt==='serato') {
+    const l=['#EXTM3U',`# Serato: ${playlist.playlist_name}`];
+    playlist.tracks.forEach(t=>{l.push(`#EXTINF:${dur2s(t.duration)},${t.artist} - ${t.title}`);l.push(`/Users/Music/${t.artist} - ${t.title}.mp3`);});
+    dl(l.join('\n'),n+'_serato.m3u','audio/x-mpegurl'); toast('Export Serato téléchargé !','file-music');
+  } else if (fmt==='txt') {
+    const l=[playlist.playlist_name,playlist.description,''];
+    playlist.tracks.forEach((t,i)=>l.push(`${i+1}. ${t.title} — ${t.artist}  [${t.bpm} BPM · ${t.duration}]`));
+    dl(l.join('\n'),n+'.txt','text/plain'); toast('Setlist texte téléchargée !','file-text');
+  } else {
+    const rows=[['#','Titre','Artiste','BPM','Durée','Énergie']];
+    playlist.tracks.forEach((t,i)=>rows.push([i+1,t.title,t.artist,t.bpm,t.duration,t.energy||'']));
+    dl(rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n'),n+'.csv','text/csv');
+    toast('Export CSV téléchargé !','table');
+  }
+}
+function dur2s(d){if(!d)return -1;const p=d.split(':');return p.length===2?+p[0]*60+ +p[1]:-1;}
+function dl(c,f,m){const b=new Blob([c],{type:m});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f;a.click();}
+
+// VIEWS
+function showGen(el) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); el.classList.add('active');
+  document.getElementById('view-gen').style.display='grid';
+  document.getElementById('view-saved').style.display='none';
+  document.getElementById('topbar-title').textContent='Nouveau générateur';
+}
+function showSaved(el) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); el.classList.add('active');
+  document.getElementById('view-gen').style.display='none';
+  document.getElementById('view-saved').style.display='block';
+  ['btn-save','btn-export','btn-spotify','btn-upgrade'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('topbar-title').textContent='Mes playlists';
+  renderSavedGrid();
+}
+
+// SAVE/DELETE
+async function savePlaylist() {
+  if (!playlist) return;
+  const now=new Date();
+  playlist.savedAt=now.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+' '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  playlist.eventType=document.getElementById('evt').value.split('—')[0].trim();
+  const i=playlists.findIndex(p=>p.playlist_name===playlist.playlist_name);
+  if(i>=0) playlists[i]=playlist; else playlists.push(playlist);
+  await saveLists(); renderSidebar();
+  document.getElementById('btn-save').style.display='none';
+  toast('Playlist sauvegardée !','bookmark');
+}
+async function deletePlaylist(i,e) {
+  e?.stopPropagation();
+  playlists.splice(i,1); await saveLists(); renderSidebar(); renderSavedGrid();
+  toast('Supprimée','trash');
+}
+
+// SIDEBAR
+function renderSidebar() {
+  const el=document.getElementById('sidebar-list');
+  document.getElementById('saved-badge').textContent=playlists.length||'';
+  if (!playlists.length) { el.innerHTML='<div style="padding:.75rem 1rem;font-size:11px;color:var(--text3);">Aucune playlist encore</div>'; return; }
+  el.innerHTML=playlists.slice().reverse().map((p,ri)=>{const i=playlists.length-1-ri;return`<div class="saved-item" onclick="loadPlaylist(${i})"><span class="saved-del" onclick="deletePlaylist(${i},event)"><i class="ti ti-x" style="font-size:11px;"></i></span><div class="saved-name">${p.playlist_name}</div><div class="saved-meta">${p.tracks.length} titres · ${p.savedAt||''}</div></div>`;}).join('');
+}
+function renderSavedGrid() {
+  const el=document.getElementById('saved-grid');
+  if (!playlists.length){el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text3);"><i class="ti ti-bookmark" style="font-size:32px;display:block;margin-bottom:10px;"></i><p style="font-size:12px;">Tes playlists sauvegardées apparaîtront ici</p></div>';return;}
+  el.innerHTML=playlists.slice().reverse().map((p,ri)=>{const i=playlists.length-1-ri;const bpm=Math.round(p.tracks.reduce((s,t)=>s+(t.bpm||0),0)/p.tracks.length);return`<div class="saved-card" onclick="loadPlaylist(${i})"><div class="sc-head"><div><div class="sc-name">${p.playlist_name}</div><div class="sc-date">${p.savedAt||''}</div></div><button class="btn" style="padding:3px 7px;" onclick="deletePlaylist(${i},event)"><i class="ti ti-trash"></i></button></div><div class="sc-desc">${p.description}</div><div class="sc-tags"><span class="sc-tag">${p.tracks.length} titres</span><span class="sc-tag">${bpm} BPM</span>${p.eventType?`<span class="sc-tag" style="background:var(--gold-bg);color:var(--gold);">${p.eventType}</span>`:''}</div></div>`;}).join('');
+}
+function loadPlaylist(i) {
+  playlist=playlists[i];
+  showGen(document.getElementById('nav-gen'));
+  document.getElementById('topbar-title').textContent=playlist.playlist_name;
+  renderPlaylist(playlist);
+  document.getElementById('btn-export').style.display='inline-flex';
+  document.getElementById('regen-btn').style.display='inline-flex';
+  document.getElementById('compat-row').style.display='flex';
+  if(spToken) document.getElementById('btn-spotify').style.display='inline-flex';
+}
+
+// GENERATE
+async function generate() {
+  const lim=PLANS[plan].limit;
+  if (usage>=lim){refreshQuota();return;}
+  const btn=document.getElementById('gen-btn');
+  btn.disabled=true; btn.innerHTML='<i class="ti ti-loader-2"></i> Génération...';
+  ['btn-save','btn-export','btn-spotify'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('compat-row').style.display='none';
+  document.getElementById('sp-send-status').style.display='none';
+  document.getElementById('regen-btn').style.display='none';
+
+  const evt=document.getElementById('evt').value;
+  const genre=document.getElementById('genre').value;
+  const bpm=document.getElementById('bpm').value;
+  const dur=document.getElementById('dur').value;
+  const inst=document.getElementById('inst').value;
+  const moods=[...document.querySelectorAll('.mood-chip.on')].map(c=>c.textContent).join(', ')||'romantique';
+
+  document.getElementById('pl-content').innerHTML='<div class="loading"><div class="spinner"></div><p>L\'IA compose ta playlist...</p></div>';
+
+  try {
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:`Tu es un DJ expert spécialisé dans les mariages et événements privés. Génère une playlist pour :
+- Événement : ${evt}
+- Ambiance : ${moods}
+- Genre : ${genre}
+- BPM cible : ${bpm} BPM
+- Durée : ${dur}
+${inst?'- Instructions : '+inst:''}
+Réponds UNIQUEMENT avec un JSON valide sans markdown :
+{"playlist_name":"Nom poétique","description":"Description courte","avg_bpm":${bpm},"total_duration":"Xh00","tracks":[{"title":"Titre","artist":"Artiste","bpm":110,"duration":"3:45","energy":"low|medium|high"}]}
+Génère 12 à 16 titres réels connus. BPM progressifs. Varie les artistes.`}]})});
+    const data=await res.json();
+    const text=data.content.map(i=>i.text||'').join('');
+    const pl=JSON.parse(text.replace(/```json|```/g,'').trim());
+    playlist=pl;
+    usage++; await saveUsage(); refreshQuota();
+    renderPlaylist(pl);
+    document.getElementById('topbar-title').textContent=pl.playlist_name;
+    document.getElementById('btn-save').style.display='inline-flex';
+    document.getElementById('btn-export').style.display='inline-flex';
+    document.getElementById('regen-btn').style.display='inline-flex';
+    document.getElementById('compat-row').style.display='flex';
+    if(spToken) document.getElementById('btn-spotify').style.display='inline-flex';
+    const rem=lim-usage;
+    if(rem===1) toast('⚠️ Plus qu\'1 génération ce mois !','alert-triangle');
+    else if(rem<=0) toast('Limite atteinte — passez Pro','lock');
+  } catch(e) {
+    document.getElementById('pl-content').innerHTML='<div class="empty"><i class="ti ti-alert-circle"></i><p>Erreur lors de la génération.<br>Réessaie.</p></div>';
+  }
+  btn.disabled=false; btn.innerHTML='<i class="ti ti-sparkles"></i> Générer avec l\'IA ↗';
+}
+
+function renderPlaylist(pl) {
+  const ec={low:'#60a5fa',medium:'var(--orange)',high:'var(--red)'};
+  const el={low:'Doux',medium:'Modéré',high:'Intense'};
+  const bpm=Math.round(pl.tracks.reduce((s,t)=>s+(t.bpm||0),0)/pl.tracks.length);
+  let h=`<div style="margin-bottom:.75rem;">
+    <div style="font-size:14px;font-weight:600;font-family:'Syne',sans-serif;margin-bottom:2px;">${pl.playlist_name}</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:10px;">${pl.description}</div>
+    <div class="stats">
+      <div class="stat"><div class="stat-v">${pl.tracks.length}</div><div class="stat-l">Titres</div></div>
+      <div class="stat"><div class="stat-v">${pl.total_duration||'—'}</div><div class="stat-l">Durée</div></div>
+      <div class="stat"><div class="stat-v">${bpm}</div><div class="stat-l">BPM moy.</div></div>
+    </div></div><div class="track-list">`;
+  pl.tracks.forEach((t,i)=>{h+=`<div class="track"><span class="t-num">${i+1}</span><div class="t-info"><div class="t-title">${t.title}</div><div class="t-artist">${t.artist}</div></div><div class="t-meta"><span style="color:${ec[t.energy]||'var(--text3)'};font-size:10px;">${el[t.energy]||''}</span><span class="bpm-tag">${t.bpm} BPM</span><span>${t.duration}</span></div></div>`;});
+  h+=`</div>`;
+  document.getElementById('pl-content').innerHTML=h;
+}
+
+// TOAST
+function toast(msg,icon) {
+  const t=document.getElementById('toast');
+  document.getElementById('toast-icon').className=`ti ti-${icon}`;
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.remove('hidden');
+  clearTimeout(t._tid);
+  t._tid=setTimeout(()=>t.classList.add('hidden'),3000);
+}
+
+load();
+</script>
+</body>
+</html>
