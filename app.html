@@ -598,7 +598,7 @@ async function generate() {
 ${inst?'- Instructions : '+inst:''}
 Réponds UNIQUEMENT avec un JSON valide sans markdown :
 {"playlist_name":"Nom poétique","description":"Description courte","avg_bpm":${bpm},"total_duration":"Xh00","tracks":[{"title":"Titre","artist":"Artiste","bpm":110,"duration":"3:45","energy":"low|medium|high","camelot":"8A"}]}
-Génère 12 à 16 titres réels connus. BPM progressifs. Varie les artistes. IMPORTANT: pour chaque titre fournis la clé harmonique Camelot (ex: 8A, 9B). Enchaîne les titres dans des clés compatibles (même numéro +/- 1, ou même numéro A<->B). Si genre Remix & Bangers: uniquement remixes emblématiques et bangers dancefloor.`})}));
+Génère 12 à 16 titres réels connus. BPM progressifs. Varie les artistes. IMPORTANT: pour chaque titre fournis la clé harmonique Camelot (ex: 8A, 9B). Enchaîne les titres dans des clés compatibles (même numéro +/- 1, ou même numéro A<->B). Si genre Remix & Bangers: uniquement remixes emblématiques et bangers dancefloor.`})});
     const data=await res.json();
     const text=data.content.map(i=>i.text||'').join('');
     const pl=JSON.parse(text.replace(/```json|```/g,'').trim());
