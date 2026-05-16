@@ -245,11 +245,23 @@ input[type=range]{flex:1;accent-color:var(--gold);}
           <label>Genre musical</label>
           <select id="genre">
             <option>Mix varié (recommandé)</option>
+            <option>Remix & Bangers</option>
             <option>Pop française & internationale</option>
+            <option>Variété française</option>
             <option>R&B / Soul</option>
             <option>Electro / House</option>
+            <option>Dance</option>
+            <option>Rock</option>
+            <option>New Wave</option>
+            <option>Salsa & Latin</option>
+            <option>Urbain / Hip-Hop</option>
             <option>Jazz / Bossa Nova</option>
-            <option>Années 80-90</option>
+            <option>Années 70</option>
+            <option>Années 80</option>
+            <option>Années 90</option>
+            <option>Années 2000</option>
+            <option>Années 2010</option>
+            <option>Années 2020</option>
           </select>
           <label>BPM cible</label>
           <div class="bpm-row">
@@ -585,8 +597,8 @@ async function generate() {
 - Durée : ${dur}
 ${inst?'- Instructions : '+inst:''}
 Réponds UNIQUEMENT avec un JSON valide sans markdown :
-{"playlist_name":"Nom poétique","description":"Description courte","avg_bpm":${bpm},"total_duration":"Xh00","tracks":[{"title":"Titre","artist":"Artiste","bpm":110,"duration":"3:45","energy":"low|medium|high"}]}
-Génère 12 à 16 titres réels connus. BPM progressifs. Varie les artistes.`})});
+{"playlist_name":"Nom poétique","description":"Description courte","avg_bpm":${bpm},"total_duration":"Xh00","tracks":[{"title":"Titre","artist":"Artiste","bpm":110,"duration":"3:45","energy":"low|medium|high","camelot":"8A"}]}
+Génère 12 à 16 titres réels connus. BPM progressifs. Varie les artistes. IMPORTANT: pour chaque titre fournis la clé harmonique Camelot (ex: 8A, 9B). Enchaîne les titres dans des clés compatibles (même numéro +/- 1, ou même numéro A<->B). Si genre Remix & Bangers: uniquement remixes emblématiques et bangers dancefloor.`})}));
     const data=await res.json();
     const text=data.content.map(i=>i.text||'').join('');
     const pl=JSON.parse(text.replace(/```json|```/g,'').trim());
@@ -623,7 +635,9 @@ function renderPlaylist(pl) {
   pl.tracks.forEach((t,i)=>{
     const ytQuery = encodeURIComponent(t.title+' '+t.artist);
     const ytUrl = 'https://www.youtube.com/results?search_query='+ytQuery;
-    h+=`<div class="track"><span class="t-num">${i+1}</span><div class="t-info"><div class="t-title">${t.title}</div><div class="t-artist">${t.artist}</div></div><div class="t-meta"><span style="color:${ec[t.energy]||'var(--text3)'};font-size:10px;">${el[t.energy]||''}</span><span class="bpm-tag">${t.bpm} BPM</span><span>${t.duration}</span><a href="${ytUrl}" target="_blank" title="Écouter sur YouTube" style="color:#FF0000;text-decoration:none;font-size:15px;opacity:0.75;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.75"><i class="ti ti-brand-youtube"></i></a></div></div>`;
+    const camelotColor = t.camelot ? (t.camelot.endsWith('A') ? '#60a5fa' : '#f59e0b') : 'var(--text3)';
+    const camelotBadge = t.camelot ? '<span style="background:'+camelotColor+'22;color:'+camelotColor+';padding:1px 6px;border-radius:20px;font-size:10px;font-weight:600;">'+t.camelot+'</span>' : '';
+    h+=`<div class="track"><span class="t-num">${i+1}</span><div class="t-info"><div class="t-title">${t.title}</div><div class="t-artist">${t.artist}</div></div><div class="t-meta"><span style="color:${ec[t.energy]||'var(--text3)'};font-size:10px;">${el[t.energy]||''}</span><span class="bpm-tag">${t.bpm} BPM</span>${camelotBadge}<span>${t.duration}</span><a href="${ytUrl}" target="_blank" title="Écouter sur YouTube" style="color:#FF0000;text-decoration:none;font-size:15px;opacity:0.75;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.75"><i class="ti ti-brand-youtube"></i></a></div></div>`;
   });
   h+=`</div>`;
   document.getElementById('pl-content').innerHTML=h;
