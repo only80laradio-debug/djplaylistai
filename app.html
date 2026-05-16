@@ -620,7 +620,11 @@ function renderPlaylist(pl) {
       <div class="stat"><div class="stat-v">${pl.total_duration||'—'}</div><div class="stat-l">Durée</div></div>
       <div class="stat"><div class="stat-v">${bpm}</div><div class="stat-l">BPM moy.</div></div>
     </div></div><div class="track-list">`;
-  pl.tracks.forEach((t,i)=>{h+=`<div class="track"><span class="t-num">${i+1}</span><div class="t-info"><div class="t-title">${t.title}</div><div class="t-artist">${t.artist}</div></div><div class="t-meta"><span style="color:${ec[t.energy]||'var(--text3)'};font-size:10px;">${el[t.energy]||''}</span><span class="bpm-tag">${t.bpm} BPM</span><span>${t.duration}</span></div></div>`;});
+  pl.tracks.forEach((t,i)=>{
+    const ytQuery = encodeURIComponent(t.title+' '+t.artist);
+    const ytUrl = 'https://www.youtube.com/results?search_query='+ytQuery;
+    h+=`<div class="track"><span class="t-num">${i+1}</span><div class="t-info"><div class="t-title">${t.title}</div><div class="t-artist">${t.artist}</div></div><div class="t-meta"><span style="color:${ec[t.energy]||'var(--text3)'};font-size:10px;">${el[t.energy]||''}</span><span class="bpm-tag">${t.bpm} BPM</span><span>${t.duration}</span><a href="${ytUrl}" target="_blank" title="Écouter sur YouTube" style="color:#FF0000;text-decoration:none;font-size:15px;opacity:0.75;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.75"><i class="ti ti-brand-youtube"></i></a></div></div>`;
+  });
   h+=`</div>`;
   document.getElementById('pl-content').innerHTML=h;
 }
