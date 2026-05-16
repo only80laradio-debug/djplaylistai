@@ -601,7 +601,10 @@ Réponds UNIQUEMENT avec un JSON valide sans markdown :
 Génère 12 à 16 titres réels connus. BPM progressifs. Varie les artistes. IMPORTANT: pour chaque titre fournis la clé harmonique Camelot (ex: 8A, 9B). Enchaîne les titres dans des clés compatibles (même numéro +/- 1, ou même numéro A<->B). Si genre Remix & Bangers: uniquement remixes emblématiques et bangers dancefloor.`})});
     const data=await res.json();
     const text=data.content.map(i=>i.text||'').join('');
-    const pl=JSON.parse(text.replace(/```json|```/g,'').trim());
+    const cleaned = text.replace(/```json/g,'').replace(/```/g,'').trim();
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON found');
+    const pl=JSON.parse(jsonMatch[0]);
     playlist=pl;
     usage++; await saveUsage(); refreshQuota();
     renderPlaylist(pl);
